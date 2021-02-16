@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<head>
+    <link rel=stylesheet href="../styles.css">
+    <link rel=stylesheet href="../styles_Labs.css">
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Adam Martin Lab 4</title>
+    <style>
+        html,
+        body,
+        #viewDiv {
+          padding-bottom: 0;
+          margin: 0;
+          height: 100%;
+          width: 100%;
+          
+        }
+      </style>
+  
+      <link
+        rel="stylesheet"
+        href="https://js.arcgis.com/4.18/esri/themes/light/main.css"
+      />
+      <script src="https://js.arcgis.com/4.18/"></script>
+
+    <script>
+        require([
+        "esri/Map",
+        "esri/views/SceneView",
+        "esri/views/MapView",
+        "esri/layers/MapImageLayer",
+        "esri/widgets/Legend",
+        "esri/widgets/LayerList"
+      ], function (Map, MapView, SceneView, MapImageLayer, Legend, LayerList) {
+
+                var Maplayer = new MapImageLayer({
+                url: "https://geogws004.umd.edu/arcgis/rest/services/GEOG677_W2021/Map_AdamMLab4_Cached/MapServer",
+                title: "State Highways",
+                sublayers: [{
+                    id: 0,
+                    visible: true,
+                    title: "Highways"
+                },
+                {
+                    id: 1,
+                    visible: false,
+                    title: "State Boundary"
+                }]
+                });
+
+                var map = new Map({
+                    basemap: "topo-vector",
+                    layers: [Maplayer]
+                });
+
+                var view = new SceneView({
+                    container: "viewDiv", 
+                    map: map,
+                    zoom: 8,
+                    center: [-77.5, 38.9]
+                });
+
+                var legend = new Legend({
+                    view: view
+                })
+
+                view.ui.add(legend, "bottom-left");
+                
+                function defineActions(event) {
+                    var item = event.item;
+
+                    if (item.title === "State Highways") {
+                        item.actionSections = [
+                        {
+                            title: "Go to full extent",
+                            className: "esri-icon-zoom-out-fixed",
+                            id: "full-extent"
+                        }
+                        ];
+                    }
+                }
+
+                view.when(function () {
+                    var layerList = new LayerList({
+                        view: view,
+                        listItemCreatedFunction: defineActions
+                    });
+
+                    layerList.on("trigger-action", function(event) {
+
+                        var visibleLayer = Maplayer.visible ? Maplayer : false;
+
+                        var id = event.action.id;
+
+                        if (id === "full-extent") {
+                            view.goTo(visibleLayer.fullExtent);
+                        }
+                    });
+
+                    view.ui.add(layerList, "top-right");
+                });
+        });
+    </script>
+</head>
+<body>
+    <div class="navbar">
+        <nav>
+            <a href="../PersonalWebsite.html">Home</a>
+            <a href="../Labs.html"> Labs</a>
+            <a href="../Projects.html"> Projects</a>
+        </nav>
+    </div>
+    <div class="content-section">
+        <div id="viewDiv"></div>
+    </div>
+</body>

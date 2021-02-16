@@ -1,0 +1,64 @@
+html, body {
+    background-color: rgb(44, 44, 44);
+    height: 100%;
+}
+
+.navbar {
+    background-color: rgb(60, 60, 61);
+    padding-top: 3em;
+    padding-bottom: .5em;
+    padding-left: .5em;
+}
+
+.navbar a{
+    color: #FFFFFF;
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-right: 1em;
+    
+}
+
+.navbar a::selection {
+    color: white;
+}
+
+.content-section {
+    height: 100%;
+    background: #FFFFFF;
+    
+}
+
+.img-parent {
+    position: relative;
+
+}
+
+.bio-theme-image {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height:300px;
+}
+
+.headshot {
+    position: absolute;
+    top: 100px;
+    left: 30px;
+    width: 300.625px;
+    height: 210.75px;
+    border: 5px solid white;
+    background-size: cover;
+    background-position: center;
+    border-radius: 50%;
+}
+
+
+.bio-header {
+    margin-left: 10px;
+}
+
+.bio {
+    margin-left: 20px;
+    margin-right: 55px;
+}

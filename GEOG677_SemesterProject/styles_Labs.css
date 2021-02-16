@@ -1,0 +1,27 @@
+.labs-list ul {
+    list-style-type: none;
+    padding-top: 1em;
+}
+
+.labs-list li {
+    margin: .75em;
+    font-size: 18px;
+}
+
+.content-section h1 {
+    margin-left: 10px;;
+}
+
+.lab1-content {
+    margin-left: 20px;
+}
+
+.project-list ul {
+    list-style-type: none;
+    padding-top: 2em;
+}
+
+.project-list li {
+    margin: .75em;
+    font-size: 18px;
+}

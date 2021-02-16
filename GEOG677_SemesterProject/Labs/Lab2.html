@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+        <link rel="stylesheet" href="./Labs_Styles/Lab2_Styles.css">
+        <link rel=stylesheet href="../styles.css">
+        <link rel="stylesheet" href="../files/leaflet-control-osm-geocoder-master/leaflet-control-osm-geocoder-master/Control.OSMGeocoder.css">
+    
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+        <script src="https://unpkg.com/leaflet-kmz@latest/dist/leaflet-kmz.js"></script>
+        <script src="../files/leaflet-control-osm-geocoder-master/leaflet-control-osm-geocoder-master/Control.OSMGeocoder.js"></script>
+
+        <script src="https://www.mapquestapi.com/sdk/leaflet/v2.2/mq-map.js?key= cPriuioV7q1E1AJ9gridkgkYmbIVp2kb"></script>
+        <script src="https://www.mapquestapi.com/sdk/leaflet/v2.2/mq-traffic.js?key= cPriuioV7q1E1AJ9gridkgkYmbIVp2kb"></script>
+    </head>
+    <body>
+        <div class="navbar">
+            <nav>
+                <a href="../PersonalWebsite.html">Home</a>
+                <a href="../Labs.html"> Labs</a>
+                <a href="../Projects.html"> Projects</a>
+            </nav>
+        </div>
+        <div class="content-section">
+            <div class="map-info"><p>Click anywhere on the map for information on that point! You can zoom and drag the map to see different extents as well!</p></div>
+            <div id="map">
+                <script>
+                    var lat = 38.895;
+                    var lon = -77.0366;
+                    var zoomlevel = 15;
+                    var mapLayer = MQ.mapLayer(), map;
+
+                    var map = L.map('map', {
+                        layers: mapLayer,
+                        center: [lat, lon],
+                        zoom: zoomlevel
+                    });
+
+                    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
+
+                    var Icon = L.icon({iconUrl: '[URL for the Icon]',iconSize: [50, 50]});
+
+                    L.marker([lat, lon]).bindPopup('text!').addTo(map);
+
+                    var popup = L.popup();
+
+                    function onMapClick(e) {
+                        popup
+                            .setLatLng(e.latlng)
+                            .setContent("You clicked the map at " + e.latlng.toString())
+                            .openOn(map);
+                    }
+
+                    map.on('click', onMapClick);
+
+                    // Instantiate KMZ layer (async)
+                    var kmz = L.kmzLayer().addTo(map);
+
+                    kmz.on('load', function(e) {
+                        control.addOverlay(e.layer, e.name);
+                        e.layer.addTo(map);
+                    });
+
+                    // Add remote KMZ files as layers (NB if they are 3rd-party servers, they MUST have CORS enabled)
+                    kmz.load("http://terpconnect.umd.edu/~amarti32/amarti32/GEOG677/PersonalPage/files/GWU_AdamM.kml")
+                    kmz.load("http://terpconnect.umd.edu/~amarti32/amarti32/GEOG677/PersonalPage/files/WashingtonMonument_AdamM.kml");
+                    kmz.load("http://terpconnect.umd.edu/~amarti32/amarti32/GEOG677/PersonalPage/files/WhiteHouse_AdamM.kml");
+
+                    var control = L.control.layers(null, null, { collapsed:false }).addTo(map);
+                    
+                    var osmGeocoder = new L.Control.OSMGeocoder();
+                    map.addControl(osmGeocoder);
+
+                    var options = {
+                        position: 'topright', /* The position of the control */
+                        text: 'Locate', /* The text of the submit button */
+                        placeholder: 'Search for a place', /* The text of the search input placeholder */
+                        };
+
+                        L.control.layers({
+                            'Map': map,
+                            'Satellite': MQ.satelliteLayer(),
+                            'Dark': MQ.darkLayer(),
+                            'Light': MQ.lightLayer()
+                            }, {
+                            'Traffic Flow': MQ.trafficLayer({layers: ['flow']}),
+                            'Traffic Incidents': MQ.trafficLayer({layers: ['incidents']})
+                            }).addTo(map);
+
+                </script>
+            </div>
+        </div>
+    </body>
+</html>

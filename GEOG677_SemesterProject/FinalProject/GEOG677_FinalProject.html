@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel=stylesheet href="../styles.css">
+        <link rel=stylesheet href="../styles_Labs.css">
+
+        <meta charset="utf-8" />
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+        <title>Adam Martin GEOG 677 Final Project Application</title>
+
+        <link rel="stylesheet" href="https://js.arcgis.com/4.18/esri/themes/light/main.css" />
+        <script src="https://js.arcgis.com/4.18/"></script>
+        <script src="jquery-3.5.1.min.js"></script>
+
+        <style>
+            .embed-container {position: relative; padding-bottom: 90%; height: 0; max-width: 100%;} 
+            .embed-container iframe, .embed-container object, .embed-container iframe{position: absolute; top: 0; left: 0; width: 100%; height: 100%;} 
+            small {position: absolute; z-index: 40; bottom: 0; margin-bottom: -15px;}
+
+            #paneDiv {
+                position: absolute;
+                top: 150px;
+                right: 18px;
+                padding: 12px;
+                background-color: rgba(0, 0, 0, 0.5);
+                color: white;
+                width: 200px;
+            }
+        </style>
+
+        <script>
+            require([
+            "esri/Map",
+            "esri/views/SceneView",
+            "esri/layers/GraphicsLayer",
+            "esri/Graphic",
+            "esri/geometry/Point",
+            "esri/tasks/Geoprocessor",
+            "esri/tasks/support/LinearUnit",
+            "esri/tasks/support/FeatureSet",
+            "esri/layers/ImageryLayer"
+            ], function(Map, SceneView, GraphicsLayer, Graphic, Point, Geoprocessor, LinearUnit, FeatureSet, ImageryLayer) {
+            var gpUrl = "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Elevation/ESRI_Elevation_World/GPServer/Viewshed";
+
+            var layer = new ImageryLayer({
+                url: "https://geogws004.umd.edu/arcgis/rest/services/amarti32/CO_LasD2Raster/ImageServer",
+                format: "jpgpng"
+            });    
+
+            var map = new Map({
+                basemap: "hybrid",
+                ground: "world-elevation",
+                layers: [layer]
+            });
+
+            var view = new SceneView({
+                container: "viewDiv",
+                map: map,
+                camera: {
+                position: {
+                    x: -105.259, 
+                    y: 39.982, 
+                    z: 8000
+                },
+                tilt: 0
+                }
+            });
+
+            var graphicsLayer = new GraphicsLayer();
+            map.add(graphicsLayer);
+
+            var markerSymbol = {
+                type: "simple-marker",
+                color: [255, 0, 0],
+                outline: {
+                color: [255, 255, 255],
+                width: 2
+                }
+            };
+
+            var fillSymbol = {
+                type: "simple-fill",
+                color: [226, 119, 40, 0.75],
+                outline: {
+                color: [255, 255, 255],
+                width: 1
+                }
+            };
+
+            var gp = new Geoprocessor(gpUrl);
+            gp.outSpatialReference = {
+                wkid: 102100
+            };
+            view.on("click", computeViewshed);
+
+            function computeViewshed(event) {
+                graphicsLayer.removeAll();
+
+                var point = new Point({
+                longitude: event.mapPoint.longitude,
+                latitude: event.mapPoint.latitude
+                });
+
+                var inputGraphic = new Graphic({
+                geometry: point,
+                symbol: markerSymbol
+                });
+
+                graphicsLayer.add(inputGraphic);
+
+                var inputGraphicContainer = [];
+                inputGraphicContainer.push(inputGraphic);
+                var featureSet = new FeatureSet();
+                featureSet.features = inputGraphicContainer;
+
+                var vsDistance = new LinearUnit();
+                vsDistance.distance = 5;
+                vsDistance.units = "miles";
+
+                var params = {
+                Input_Observation_Point: featureSet,
+                Viewshed_Distance: vsDistance
+                };
+
+                gp.execute(params).then(drawResultData);
+            }
+
+            function drawResultData(result) {
+                var resultFeatures = result.results[0].value.features;
+
+                var viewshedGraphics = resultFeatures.map(function(feature) {
+                feature.symbol = fillSymbol;
+                return feature;
+                });
+
+                graphicsLayer.addMany(viewshedGraphics);
+
+                view.goTo({
+                target: viewshedGraphics,
+                tilt: 0
+                })
+                .catch(function(error) {
+                if (error.name != "AbortError") {
+                    console.error(error);
+                }
+                });
+            }
+            });
+        </script>
+
+    </head>
+    <body>
+        <div class="navbar">
+            <nav>
+                <a href="../PersonalWebsite.html">Home</a>
+                <a href="../Labs.html"> Labs</a>
+                <a href="../Projects.html"> Projects</a>
+            </nav>
+        </div>
+        <div class="viewSelection">
+            <nav>
+                <button type="button" id="toggleLCP" onclick="ToggleDIV('LeastPathView')">Double Click to Toggle Least Cost Path View / Viewshed View</button>
+        </div>
+
+        <div class="embed-container" id="LeastPathView" >
+            <iframe width="500" height="200" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" title="Least Cost Path Application" src="https://uofmd.maps.arcgis.com/apps/webappviewer/index.html?id=c4bd6b7d8eba463cad041b59c36a0caf&home=true&zoom=true&previewImage=false&scale=true&search=true&searchextent=true&legendlayers=true&basemap_gallery=true&disable_scroll=true"></iframe>
+        </div>
+
+        <div id="ViewshedView" style="display:none;">
+            <div id="viewDiv" style="height: 100vh;"></div>
+            <div id="paneDiv" class="esri-widget">Left click on map to execute ViewShed Task. Right click to change view angle.</div>
+        </div>
+        
+
+        <script>
+            function ToggleDIV(id) {
+                var LCP = document.getElementById(id);
+                var VS = document.getElementById("ViewshedView");
+
+                if (LCP.style.display === "block") {
+                    LCP.style.display = "none";
+                    VS.style.display = "block";
+                } else {
+                    VS.style.display = "none";
+                    LCP.style.display = "block"
+                }
+            } 
+        </script>
+
+    </body>
+</html>
